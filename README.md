@@ -1,57 +1,59 @@
 
 # GitFame
 
-**GitFame** — это консольная утилита, написанная на Go, для анализа вклада разработчиков в Git-репозитории. Она собирает и агрегирует статистику по авторам коммитов: количество строк, количество уникальных коммитов и число файлов, в которых производились изменения.
+**GitFame** is a command-line utility written in Go that analyzes developer contributions in Git repositories. It collects and aggregates commit author statistics such as the number of lines, unique commits, and the number of files changed.
 
-Проект выполнен в рамках учебного курса, но представляет собой полнофункциональное CLI-приложение и может использоваться как инструмент в реальных рабочих сценариях. 
+This project was created as part of a training course, but it is a fully functional CLI tool that can be used in real-world scenarios.
 
 ---
 
-## GitFame позволяет
-- Анализировать изменения в репозитории на определённой ревизии (`--revision`, по умолчанию `HEAD`).
-- Подсчитывать количество строк, коммитов и файлов по каждому автору.
-- Ограничивать анализ по расширениям, языкам или glob-паттернам.
-- Использовать автора или коммиттера как источник авторства (`--use-committer`).
-- Выводить результат в форматах: `tabular`, `csv`, `json`, `json-lines`.
+## GitFame can:
 
-Пример вывода:
+- Analyze changes in a repository at a specific revision (`--revision`, defaults to `HEAD`).
+- Count the number of lines, commits, and files for each author.
+- Restrict the analysis by file extensions, languages, or glob patterns.
+- Use the committer instead of the author for attribution (`--use-committer`).
+- Output results in various formats: `tabular`, `csv`, `json`, `json-lines`.
+
+Example output:
 ```
 Name         Lines Commits Files
 Alice Smith  1023  17      12
 Bob Johnson  541   9       8
 ```
 
-### Библиотеки
-- [`pflag`](https://github.com/spf13/pflag) — для расширенной работы с CLI-флагами.
-- `os/exec` — выполнение Git-команд в подкапотной логике.
-- `text/tabwriter`, `encoding/json`, `encoding/csv` — для гибкого вывода результата.
+### Libraries used
+
+- [`pflag`](https://github.com/spf13/pflag) — for enhanced CLI flag parsing.
+- `os/exec` — to execute Git commands under the hood.
+- `text/tabwriter`, `encoding/json`, `encoding/csv` — for flexible output formatting.
 
 ---
 
-## Многопоточность и синхронизация
+## Concurrency and Synchronization
 
-Для ускорения обработки большого числа файлов используется **worker pool** с настраиваемым числом потоков (`--cpu-count`).
+To speed up processing of a large number of files, a **worker pool** is used with a configurable number of threads (`--cpu-count`).
 
-Используемые паттерны и технологии:
-- **Worker Pool** — ограничение количества одновременно работающих горутин.
-- **WaitGroup** — ожидание завершения всех задач.
-- **Каналы** — для передачи сигналов об ошибках и синхронизации доступа к общим структурам.
-- **Ручная блокировка через буферизованные каналы** — альтернатива стандартным мьютексам, что упростило и сделало код прозрачнее.
+Patterns and techniques used:
+- **Worker Pool** — limits the number of goroutines running simultaneously.
+- **WaitGroup** — waits for all tasks to complete.
+- **Channels** — for error signaling and safe access to shared structures.
+- **Manual locking with buffered channels** — used instead of standard mutexes to simplify and clarify the code.
 
 ---
 
-## Примеры запуска
+## Example Usage
 
 ```bash
-# Анализ всех .go и .md файлов
+# Analyze all .go and .md files
 gitfame --repository=. --extensions='.go,.md' --order-by=lines
 
-# Только файлы написанные на Go и Markdown
+# Analyze only Go and Markdown files
 gitfame --languages='go,markdown' --format=json
 
-# Учитывать только коммиттера, а не автора
+# Use committer instead of author
 gitfame --use-committer --format=csv
 
-# Исключить директории vendor и testdata
+# Exclude vendor and testdata directories
 gitfame --exclude='vendor/*,testdata/*'
 ```
